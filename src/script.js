@@ -87,9 +87,9 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.x = 4;
-camera.position.y = 2;
-camera.position.z = 4;
+camera.position.x = 18;
+camera.position.y = 5.6;
+camera.position.z = -8;
 scene.add(camera);
 
 // Controls
@@ -116,7 +116,7 @@ const tick = () => {
 
   // Update controls
   controls.update();
-
+  // console.log(camera.position);
   // Render
   renderer.render(scene, camera);
 
