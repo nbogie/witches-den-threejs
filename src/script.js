@@ -19,12 +19,20 @@ const canvas = document.querySelector("canvas.webgl");
 // Scene
 const scene = new THREE.Scene();
 
+const resources = {
+  texture: "chairs/baked.jpg",
+  modelPath: "/chairs/chairs_scene.glb",
+};
+const resources2 = {
+  texture: "/barrels/mytexture.001.jpg",
+  modelPath: "/barrels/barrels.glb",
+};
 /**
  * Loaders
  */
 // Texture loader
 const textureLoader = new THREE.TextureLoader();
-const bakedTexture = textureLoader.load("baked.jpg");
+const bakedTexture = textureLoader.load(resources.texture);
 bakedTexture.flipY = false;
 // bakedTexture.encoding = THREE.sRGBEncoding;
 //const bakedMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
@@ -37,7 +45,7 @@ dracoLoader.setDecoderPath("draco/");
 const gltfLoader = new GLTFLoader();
 let portalScene;
 gltfLoader.load(
-  "/chairs_scene.glb",
+  resources.modelPath,
   (gltf) => {
     portalScene = gltf.scene;
 
