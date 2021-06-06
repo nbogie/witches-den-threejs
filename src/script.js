@@ -4,6 +4,21 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import {
+  MeshStandardMaterial,
+  MeshBasicMaterial,
+  SphereGeometry,
+  GridHelper,
+  AxesHelper,
+  DirectionalLight,
+  PointLight,
+  Vector3,
+  PointLightHelper,
+} from "three";
+
+const bubbles = [];
+let frameCount = 1;
+const cauldronPosition = new THREE.Vector3(2, 0.2, 2.15);
 
 /**
  * Base
@@ -18,15 +33,22 @@ const canvas = document.querySelector("canvas.webgl");
 
 // Scene
 const scene = new THREE.Scene();
-
-const resources = {
+const axesHelper = new THREE.AxesHelper(3);
+// scene.add(axesHelper);
+axesHelper.position.y += 2;
+const resources_chairs = {
   texture: "chairs/baked.jpg",
   modelPath: "/chairs/chairs_scene.glb",
 };
-const resources2 = {
+const resources_witches_den = {
+  texture: "/witches_den/baked_img.jpg",
+  modelPath: "/witches_den/witches_cauldron_diorama_unwrapping.glb",
+};
+const resources_barrels = {
   texture: "/barrels/mytexture.001.jpg",
   modelPath: "/barrels/barrels.glb",
 };
+const resources = resources_witches_den;
 /**
  * Loaders
  */
@@ -95,11 +117,20 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
-camera.position.x = 18;
-camera.position.y = 5.6;
-camera.position.z = -8;
+camera.position.x = 4;
+camera.position.y = 2;
+camera.position.z = 10;
 scene.add(camera);
 
+const cauldronLight = new PointLight(0x68ff3c, 1);
+cauldronLight.position.copy(cauldronPosition);
+scene.add(cauldronLight);
+const torchLight = new PointLight("orange", 0.3);
+torchLight.position.x = -3;
+torchLight.position.y = 3;
+torchLight.position.z = 2;
+scene.add(torchLight);
+//scene.add(new PointLightHelper(cauldronLight));
 // Controls
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
@@ -128,8 +159,63 @@ const tick = () => {
   // Render
   renderer.render(scene, camera);
 
+  updateBubbles();
+  if (frameCount % 30 === 0 && bubbles.length < 5) {
+    createBubble();
+  }
+  frameCount++;
   // Call tick again on the next frame
   window.requestAnimationFrame(tick);
 };
 
 tick();
+
+function createBubble() {
+  const colour = randomBubbleColour();
+  const bubble = new THREE.Mesh(
+    new SphereGeometry(1, 8, 8),
+    // new MeshBasicMaterial({ color: 0xaaff00, wireframe: true })
+    new MeshStandardMaterial({
+      color: colour,
+      wireframe: false,
+    })
+  );
+
+  const xOffset = randBetween(-0.3, 0.3);
+  const zOffset = 0; //randBetween(-0.3, 0.3);
+
+  bubble.position.copy(cauldronPosition.add(new Vector3(xOffset, 0, zOffset)));
+  //piggy-back some more info on the mesh object
+  bubble.velocity = new THREE.Vector3(0, 0.01 + Math.random() * 0.02, 0);
+  bubble.maxHeight = 2 + Math.random() * 2;
+
+  const sz = 0.05 + Math.random() * 0.2;
+  bubble.scale.set(sz, sz, sz);
+
+  scene.add(bubble);
+  bubbles.push(bubble);
+}
+
+function updateBubbles() {
+  for (let b of bubbles) {
+    b.position.add(b.velocity);
+    if (b.position.y > b.maxHeight) {
+      b.position.y = 0;
+      b.maxHeight = 2 + Math.random() * 2;
+      b.material.color.set(randomBubbleColour());
+    }
+  }
+}
+
+function randBetween(mn, mx) {
+  return mn + Math.random() * (mx - mn);
+}
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function randomBubbleColour() {
+  //  return pick([0x68ff3c, 0x6f00ff]);
+  return pick([0xffffff]);
+}
